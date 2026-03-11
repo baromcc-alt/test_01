@@ -523,10 +523,14 @@ function showResult() {
     var wrap = document.createElement("div");
     wrap.className = "keyword-wrap";
     if (showRosacea) {
-      var req = document.createElement("span");
-      req.className = "keyword-tag required";
-      req.textContent = "#주사피부염";
-      wrap.appendChild(req);
+      var req1 = document.createElement("span");
+      req1.className = "keyword-tag required";
+      req1.textContent = "#홍조";
+      wrap.appendChild(req1);
+      var req2 = document.createElement("span");
+      req2.className = "keyword-tag required";
+      req2.textContent = "#주사피부염";
+      wrap.appendChild(req2);
     }
     for (var j = 0; j < yesAnswers.length; j++) {
       var tag = document.createElement("span");
@@ -617,7 +621,7 @@ function copySymptoms() {
   var label = RESULTS[lvl].label;
   var text = "";
   var showRosacea = (lvl === 2 || lvl === 3);
-  if (showRosacea) text += "#주사피부염";
+  if (showRosacea) text += "#홍조 #주사피부염";
   for (var i = 0; i < yesAnswers.length; i++) {
     if (text.length > 0) text += " ";
     text += questions[yesAnswers[i]].keyword;
