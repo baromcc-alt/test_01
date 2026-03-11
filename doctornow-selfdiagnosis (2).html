@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주사피부염 셀프 진단 | 닥터나우</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #FD7E14;
+      --bg-dark: #1C1C1E;
+      --bg-card: #2C2C2E;
+      --white: #FFFFFF;
+      --sub: rgba(255,255,255,0.55);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #111;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .device {
+      width: 100%; max-width: 390px;
+      height: 100dvh; max-height: 844px;
+      background: var(--bg-dark);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 22px 0;
+      font-size: 15px; font-weight: 600; color: #fff;
+      flex-shrink: 0; z-index: 10;
+    }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+
+    /* NAV BAR */
+    .nav-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px 14px; flex-shrink: 0; z-index: 10;
+    }
+    .nav-back {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; cursor: pointer; flex-shrink: 0;
+    }
+    .nav-title { font-size: 15px; font-weight: 600; color: #fff; letter-spacing: -0.3px; }
+
+    /* PROGRESS */
+    .prog-wrap { padding: 0 24px 4px; flex-shrink: 0; }
+    .prog-track { height: 4px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; }
+    .prog-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+
+    /* SCREENS */
+    .screen { display: none; flex: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    .screen.active { display: flex; animation: sIn .32s cubic-bezier(.4,0,.2,1) both; }
+    @keyframes sIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+    /* INTRO */
+    #screen-intro { background: var(--bg-dark); }
+    .intro-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 28px; }
+    .intro-title { font-size: 28px; font-weight: 900; color: #fff; line-height: 1.38; letter-spacing: -0.8px; margin-bottom: 26px; }
+    .intro-desc { font-size: 15px; color: var(--sub); line-height: 1.9; letter-spacing: -0.2px; }
+
+    /* QUESTION */
+    #screen-question { background: var(--bg-dark); }
+    .q-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 28px; }
+    .q-title { font-size: 26px; font-weight: 900; color: #fff; line-height: 1.42; letter-spacing: -0.7px; margin-bottom: 22px; white-space: pre-line; }
+    .q-desc  { font-size: 14px; color: var(--sub); line-height: 1.9; letter-spacing: -0.2px; white-space: pre-line; }
+    .btn-row { display: flex; gap: 12px; padding: 0 28px 40px; flex-shrink: 0; }
+    .btn-no, .btn-yes {
+      flex: 1; padding: 20px 0; border: none; border-radius: var(--radius);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 18px; font-weight: 700; cursor: pointer;
+      transition: transform .12s, opacity .12s; letter-spacing: -0.3px;
+    }
+    .btn-no  { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn-yes { background: var(--primary); color: #fff; }
+    .btn-no:active, .btn-yes:active { transform: scale(.96); opacity: .8; }
+
+    /* START BUTTON */
+    .btn-full {
+      width: 100%; padding: 20px; border: none;
+      background: var(--primary); color: #fff;
+      border-radius: var(--radius);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 18px; font-weight: 700; cursor: pointer;
+      letter-spacing: -0.3px; flex-shrink: 0;
+      transition: transform .12s, opacity .12s;
+    }
+    .btn-full:active { transform: scale(.97); opacity: .88; }
+
+    /* RESULT BG */
+    #screen-result { overflow-y: auto; }
+    .res-bg-0 { background: linear-gradient(160deg, #42B4F5 0%, #2196E0 100%); }
+    .res-bg-1 { background: linear-gradient(160deg, #9B79E8 0%, #7B5CE0 100%); }
+    .res-bg-2 { background: linear-gradient(160deg, #3DBD82 0%, #1E9E65 100%); }
+    .res-bg-3 { background: linear-gradient(160deg, #F97BBF 0%, #E8539A 100%); }
+
+    /* RESULT TOP */
+    .res-top {
+      display: block;
+      padding: 20px 28px 0;
+      text-align: left;
+    }
+    #res-percent {
+      font-size: 32px; font-weight: 900; color: #fff;
+      letter-spacing: -1px; line-height: 1.2; margin-bottom: 8px;
+    }
+    #res-subtitle {
+      font-size: 15px; font-weight: 800; color: #ffffff;
+      line-height: 1.5; letter-spacing: -0.3px;
+    }
+
+    /* CHARACTER */
+    .char-wrap {
+      display: flex; justify-content: center;
+      padding: 16px 0 0;
+    }
+    .char-bubble {
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 76px; position: relative;
+    }
+    .char-bubble::before {
+      content: '';
+      position: absolute; inset: -6px; border-radius: 50%;
+      border: 2px dashed rgba(255,255,255,0.3);
+      animation: spin 14s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* WHITE CARD */
+    .res-card-body {
+      background: #fff; border-radius: 28px 28px 0 0;
+      padding: 22px 24px 0; flex: 1;
+    }
+    .res-body-text {
+      font-size: 17px; font-weight: 800; color: #fff;
+      line-height: 1.65; letter-spacing: -0.4px;
+      text-align: center; white-space: pre-line;
+      padding: 16px 28px 28px;
+    }
+    .res-body-sub {
+      font-size: 13px; color: #6B7280;
+      line-height: 1.75; letter-spacing: -0.2px;
+      text-align: center; margin-bottom: 18px; white-space: pre-line;
+      padding-top: 4px;
+    }
+
+    /* HASHTAGS */
+    .hashtag-list {
+      display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center;
+      gap: 8px; margin-bottom: 16px;
+    }
+    .hashtag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #F3F4F6; border-radius: 99px;
+      padding: 8px 16px;
+      font-size: 13px; font-weight: 700; color: #374151;
+      letter-spacing: -0.2px;
+    }
+
+    /* SYMPTOM SUMMARY */
+    .symptom-summary {
+      background: #F9FAFB; border-radius: 16px;
+      padding: 14px 18px; margin-bottom: 14px;
+    }
+    .symptom-summary-title {
+      font-size: 12px; font-weight: 700; color: #6B7280;
+      letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .symptom-summary-empty {
+      font-size: 14px; color: #9CA3AF; text-align: center; padding: 8px 0;
+    }
+    .keyword-wrap {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .keyword-tag {
+      background: #fff; border: 1.5px solid #FD7E14;
+      border-radius: 99px; padding: 6px 14px;
+      font-size: 13px; font-weight: 700; color: #FD7E14;
+      letter-spacing: -0.2px;
+    }
+    .keyword-tag.required {
+      background: #FD7E14; color: #fff; border-color: #FD7E14;
+    }
+
+    /* COPY BUTTON */
+    .btn-copy {
+      width: 100%; padding: 14px; border: 1.5px solid #E5E7EB;
+      background: #fff; color: #374151;
+      border-radius: var(--radius);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      letter-spacing: -0.2px; margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .btn-copy.copied { background: #ECFDF5; border-color: #6EE7B7; color: #059669; }
+
+    /* CTA + SHARE + RETRY */
+    .res-cta-wrap { padding: 0 0 16px; }
+    .btn-cta {
+      width: 100%; padding: 20px; border: none;
+      background: var(--primary); color: #fff;
+      border-radius: var(--radius);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 17px; font-weight: 800; cursor: pointer;
+      letter-spacing: -0.3px; margin-bottom: 10px;
+      transition: transform .12s, opacity .12s;
+    }
+    .btn-cta:active { transform: scale(.97); opacity: .88; }
+    .btn-share {
+      width: 100%; padding: 16px; border: none;
+      background: #F3F4F6; color: #374151;
+      border-radius: var(--radius);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      letter-spacing: -0.3px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .12s;
+    }
+    .btn-share:active { background: #E5E7EB; }
+    .btn-retry {
+      width: 100%; padding: 12px; border: none;
+      background: transparent; color: #9CA3AF;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      letter-spacing: -0.2px;
+    }
+    .share-toast {
+      display: none; text-align: center;
+      font-size: 13px; color: #059669; font-weight: 600;
+      padding: 8px 0 4px;
+    }
+    .disclaimer {
+      font-size: 11px; color: #D1D5DB;
+      line-height: 1.7; text-align: center; padding-bottom: 28px;
+    }
+  </style>
+</head>
+<body>
+<div class="device">
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="#fff"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="12" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1" opacity=".3"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="#fff"><path d="M8 2.5C10.3 2.5 12.4 3.5 13.8 5.1L15.3 3.4C13.4 1.3 10.8 0 8 0C5.2 0 2.6 1.3.7 3.4L2.2 5.1C3.6 3.5 5.7 2.5 8 2.5Z"/><path d="M8 5.5C9.5 5.5 10.9 6.2 11.8 7.3L13.3 5.6C12 4.1 10.1 3.2 8 3.2C5.9 3.2 4 4.1 2.7 5.6L4.2 7.3C5.1 6.2 6.5 5.5 8 5.5Z"/><circle cx="8" cy="10" r="2"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#fff" stroke-opacity=".35"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#fff"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.4 24.5 6C24.5 5.6 23.8 4.8 23 4.5Z" fill="#fff" opacity=".4"/></svg>
+    </div>
+  </div>
+
+  <!-- NAV BAR -->
+  <div class="nav-bar">
+    <div class="nav-back" onclick="goBack()">&#8249;</div>
+    <div class="nav-title" id="nav-title">닥터나우 주사피부염 자가 진단</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-wrap" id="prog-wrap" style="display:none;">
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-body">
+      <div class="intro-title">혹시 나도 홍당무?<br>주사피부염 셀프 체크! 🥕</div>
+      <div class="intro-desc">
+        혹시 얼굴이 자꾸만 빨개져서 고민이신가요? 🍎<br>
+        분명 여드름 같은데 아무리 약을 발라도<br>
+        그대로라면, 그건 사실 '주사피부염'일지도 몰라요!<br><br>
+        우리 얼굴에 찾아온 불청객,<br>
+        같이 확인해 볼까요?
+      </div>
+    </div>
+    <div style="padding:0 28px 40px;flex-shrink:0;">
+      <button class="btn-full" onclick="startQuiz()">시작하기</button>
+    </div>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="screen-question">
+    <div class="q-body">
+      <div class="q-title" id="q-title"></div>
+      <div class="q-desc"  id="q-desc"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-yes" onclick="answer(true)">네</button>
+      <button class="btn-no"  onclick="answer(false)">아니오</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <div id="res-top-area">
+      <div class="res-top">
+        <div id="res-percent"></div>
+        <div id="res-subtitle"></div>
+      </div>
+      <div class="char-wrap">
+        <div class="char-bubble" id="char-bubble"></div>
+      </div>
+      <div class="res-body-text" id="res-body-text"></div>
+    </div>
+    <div class="res-card-body">
+      <div class="res-body-sub" id="res-body-sub"></div>
+      <div class="hashtag-list"  id="hashtag-list"></div>
+      <div class="symptom-summary">
+        <div class="symptom-summary-title">✅ 내가 선택한 증상</div>
+        <div id="symptom-list"></div>
+      </div>
+      <button class="btn-copy" id="btn-copy" onclick="copySymptoms()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        증상 텍스트 복사하기
+      </button>
+      <div class="res-cta-wrap">
+        <button class="btn-cta" onclick="goToDoctor()">주사피부염 진료 바로가기</button>
+        <button class="btn-share" onclick="shareResult()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          친구에게 공유하기
+        </button>
+        <div id="share-toast" class="share-toast">🔗 링크가 클립보드에 복사됐어요!</div>
+        <button class="btn-retry" onclick="retakeQuiz()">&#8635; 다시 진단하기</button>
+      </div>
+      <p class="disclaimer">본 결과는 의학적 진단이 아니며 참고용으로만 활용해 주세요.<br>정확한 진단은 전문의와 상담하시기 바랍니다.</p>
+    </div>
+  </div>
+
+</div><!-- /device -->
+
+<script>
+var questions = [
+  {
+    title: "코, 볼, 이마처럼\n얼굴 한 가운데, 흔히 말하는\n나비존이 발그레 해요! 🦋",
+    keyword: "#얼굴홍조",
+    desc: "코랑 볼, 이마가 아무 이유 없이 빨갛게 변하나요?\n나비 모양처럼 얼굴 중앙이 자주 붉어진다면 체크!",
+    symptom: "나비존 홍조 (코·볼·이마 중앙부 붉어짐)"
+  },
+  {
+    title: "얼굴에 불이 난 것처럼\n따끔따끔, 화끈화끈한 느낌이\n자주 들어요 🔥",
+    keyword: "#열감따끔거림",
+    desc: "피부가 따끔따끔하거나,\n손을 대지 않아도 후끈후끈 열감이 느껴져서\n속상하다면 체크!",
+    symptom: "피부 열감·따끔거림·작열감"
+  },
+  {
+    title: "여드름처럼 톡톡 올라오는데\n고름은 없어요! 🍡",
+    keyword: "#고름없는뾰루지",
+    desc: "여드름인 줄 알았는데 노란 고름은 없고,\n그냥 빨갛게 툭 튀어나오기만 했다면\n주사피부염 신호예요! 바로 체크!",
+    symptom: "고름 없는 붉은 구진 (여드름과 다른 형태)"
+  },
+  {
+    title: "사막처럼 피부가 버석버석하고\n살짝만 건드려도 따가워요! 🌵",
+    keyword: "#민감피부",
+    desc: "로션을 발라도 피부가 금방 건조해지고,\n살짝만 스쳐도 \"아야!\" 소리가\n날 만큼 예민하다면 체크!",
+    symptom: "극도의 피부 건조·민감·자극 과민 반응"
+  },
+  {
+    title: "온도가 바뀌면\n얼굴이 금방 빨개져요! ❄️🔥",
+    keyword: "#온도민감홍조",
+    desc: "겨울에 밖에 있다가 따뜻한 실내에 들어갈 때,\n여름에 뜨거운 햇볕 아래 있을 때\n얼굴이 순식간에 달아오른다면 체크!",
+    symptom: "온도 변화에 따른 즉각적인 홍조 반응"
+  },
+  {
+    title: "술, 맵고 뜨거운 음식이나\n스트레스에 얼굴이\n쉽게 붉어져요! 🌶️",
+    keyword: "#자극반응홍조",
+    desc: "엄청 많이 마시거나 스트레스받은 것도 아닌데\n얼굴이 혼자서 빨~강게 달아오른 적 있나요?\n조금만 자극받아도 불이 켜지는 느낌이라면 체크! 💡",
+    symptom: "술·자극 음식·스트레스로 인한 홍조"
+  },
+  {
+    title: "여드름약이나 항생제를 써도\n자꾸 재발해요! 💊",
+    keyword: "#항생제재발",
+    desc: "여드름약, 항생제를 먹고 발라봤는데,\n잠시 좋아졌다가 다시 빨개지나요?\n그럼 범인은 여드름이 아닐지도 몰라요!\n이런 경험이 있다면 체크!",
+    symptom: "여드름 치료 후에도 반복되는 재발"
+  },
+  {
+    title: "거울 속 내 코 옆이나 볼에\n빨간 실핏줄이 보여요! 🌐",
+    keyword: "#실핏줄모세혈관",
+    desc: "평소에 \"피부 얇다~\"는 말을 자주 듣거나\n피부가 두꺼운 편인데도\n붉은 실핏줄이 비치는 경우가 있나요? 바로 체크!",
+    symptom: "코·볼 주변 붉은 실핏줄 (모세혈관 확장)"
+  }
+];
+
+var RESULTS = [
+  {
+    bgClass: "res-bg-0",
+    subtitle: "🎉 좋아요! 현재 증상으로는 주사피부염 가능성이 낮아요.",
+    char: "🛡️",
+    bodyText: "주사피부염과는 거리가 멀어 보여요!\n지금 피부 상태가 아주 잘 관리되고 있는 것 같아요 ✨",
+    bodySub: "다만 피부 고민이 있다면\n여드름, 지루성피부염 등 다른 원인일 수 있으니\n궁금한 점이 있을 때 언제든 닥터나우에서 편하게 물어봐 주세요!\n\n피부 건강, 저희가 함께할게요 🥰",
+    hashtags: ["#주사피부염OUT 😎", "#아플땐닥터나우 😆"],
+    label: "주사피부염 확률 매우 낮음"
+  },
+  {
+    bgClass: "res-bg-1",
+    subtitle: "😊 지금은 크게 주사피부염 걱정 안 해도 괜찮아요!",
+    char: "💪",
+    bodyText: "주사피부염 가능성이 낮은 편이지만,\n몇 가지 비슷한 증상이 보이고 있어요.",
+    bodySub: "지금 당장 문제가 되지는 않더라도\n얼굴이 자주 붉어지거나\n따끔거리는 느낌이 계속된다면\n비대면 진료를 받아보는 걸 추천해요!\n\n병원에 직접 방문하지 않아 편하고\n진료 시간도 예약 가능해 일정 조율도 편해요\n조기에 관리하면 나중에 훨씬 편해진답니다 🌿",
+    hashtags: ["#일시적홍조", "#스트레스&수면관리"],
+    label: "주사피부염 확률 낮음"
+  },
+  {
+    bgClass: "res-bg-2",
+    subtitle: "🤔 나 혹시... 주사피부염?",
+    char: "🎀",
+    bodyText: "주사피부염 가능성이 꽤 높은 편이에요!\n주사피부염일 가능성이 아주 높으니\n지금 단계에서 진료를 받아보면 정말 좋겠어요.",
+    bodySub: "진료받을 때 증상에 \"주사피부염\"을 작성하고\n피부 사진을 함께 첨부하면\n여드름인지 주사피부염인지\n더 정확하게 확인할 수 있어요!\n\n증상이 심하다면 대면 진료 예약을 통해\n가까운 피부과에서 직접 진단받아 보는 것도 추천드려요 🏥",
+    hashtags: ["#자주생기는홍조", "#여드름아니고주사피부염"],
+    label: "주사피부염 확률 높음"
+  },
+  {
+    bgClass: "res-bg-3",
+    subtitle: "위험! 완전 홍당무 주의보! 🥕",
+    char: "🏥",
+    bodyText: "아이쿠! 얼굴이 많이 답답하고 힘들었겠어요. 🥹\n이건 여드름이 아니라\n주사피부염일 확률이 정말 높아요!",
+    bodySub: "지금 바로 닥터나우에서 '주사피부염'을\n선택하고 선생님께 고민을 털어놓으세요.\n\"제 증상이 주사피부염 같아요!\"라고\n꼭 말씀해 주시는 것, 잊지 마세요!",
+    hashtags: ["#주사피부염", "#모낭염아니고모낭충"],
+    label: "주사피부염 확률 매우 높음"
+  }
+];
+
+var TOTAL = questions.length;
+var currentQ = 0;
+var yesCount = 0;
+var answering = false;
+var yesAnswers = [];
+var q1Answer = false; // Q1(홍조) 선택 여부
+
+function startQuiz() {
+  currentQ = 0;
+  yesCount = 0;
+  yesAnswers = [];
+  q1Answer = false;
+  document.getElementById("nav-title").textContent = "닥터나우 주사피부염 셀프 테스트";
+  document.getElementById("prog-wrap").style.display = "block";
+  showScreen("screen-question");
+  renderQ();
+}
+
+function renderQ() {
+  var q = questions[currentQ];
+  document.getElementById("q-title").textContent = q.title;
+  document.getElementById("q-desc").textContent = q.desc;
+  document.getElementById("prog-fill").style.width = (currentQ / TOTAL * 100) + "%";
+  var el = document.getElementById("screen-question");
+  el.style.animation = "none";
+  void el.offsetWidth;
+  el.style.animation = "";
+}
+
+function answer(isYes) {
+  if (answering) return;
+  answering = true;
+  if (currentQ === 0) {
+    q1Answer = isYes; // Q1 홍조 여부 별도 저장
+  }
+  if (isYes) {
+    yesCount++;
+    if (currentQ > 0) yesAnswers.push(currentQ); // Q2~Q8만 증상 목록에 추가
+  }
+  currentQ++;
+  if (currentQ < TOTAL) {
+    renderQ();
+    setTimeout(function() { answering = false; }, 350);
+  } else {
+    document.getElementById("prog-fill").style.width = "100%";
+    setTimeout(function() { showResult(); answering = false; }, 350);
+  }
+}
+
+function showResult() {
+  document.getElementById("prog-wrap").style.display = "none";
+  document.getElementById("nav-title").textContent = "닥터나우 주사피부염 진단 결과";
+
+  // Q1(홍조) 여부 + Q2~Q8 선택 수로 레벨 결정
+  var otherCount = q1Answer ? yesCount - 1 : yesCount; // Q1 네이면 1 빼기
+  var lvl;
+  if (q1Answer) {
+    lvl = otherCount >= 2 ? 3 : 2; // 홍조O: 2개이상→매우높음, 1개이하→높음
+  } else {
+    lvl = otherCount >= 2 ? 1 : 0; // 홍조X: 2개이상→낮음, 1개이하→매우낮음
+  }
+  var r = RESULTS[lvl];
+
+  var resultScreen = document.getElementById("screen-result");
+  resultScreen.className = "screen " + r.bgClass;
+
+  document.getElementById("res-percent").textContent = r.label;
+  document.getElementById("res-subtitle").textContent = r.subtitle;
+  document.getElementById("char-bubble").textContent = r.char;
+  document.getElementById("res-body-text").textContent = r.bodyText;
+  document.getElementById("res-body-sub").textContent = r.bodySub;
+
+  var hl = document.getElementById("hashtag-list");
+  hl.innerHTML = "";
+  for (var i = 0; i < r.hashtags.length; i++) {
+    var div = document.createElement("div");
+    div.className = "hashtag";
+    div.textContent = r.hashtags[i];
+    hl.appendChild(div);
+  }
+
+  var sl = document.getElementById("symptom-list");
+  sl.innerHTML = "";
+  var showRosacea = (lvl === 2 || lvl === 3);
+  if (yesAnswers.length === 0 && !showRosacea) {
+    var empty = document.createElement("div");
+    empty.className = "symptom-summary-empty";
+    empty.textContent = "선택한 증상이 없어요 🙂";
+    sl.appendChild(empty);
+  } else {
+    var wrap = document.createElement("div");
+    wrap.className = "keyword-wrap";
+    if (showRosacea) {
+      var req = document.createElement("span");
+      req.className = "keyword-tag required";
+      req.textContent = "#주사피부염";
+      wrap.appendChild(req);
+    }
+    for (var j = 0; j < yesAnswers.length; j++) {
+      var tag = document.createElement("span");
+      tag.className = "keyword-tag";
+      tag.textContent = questions[yesAnswers[j]].keyword;
+      wrap.appendChild(tag);
+    }
+    sl.appendChild(wrap);
+  }
+
+  var btn = document.getElementById("btn-copy");
+  btn.className = "btn-copy";
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> 증상 텍스트 복사하기';
+
+  document.getElementById("share-toast").style.display = "none";
+
+  showScreen("screen-result");
+}
+
+function showScreen(id) {
+  var screens = document.querySelectorAll(".screen");
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove("active");
+  }
+  document.getElementById(id).classList.add("active");
+}
+
+function goBack() {
+  var active = document.querySelector(".screen.active").id;
+  if (active === "screen-question") {
+    if (currentQ > 0) { currentQ--; }
+    if (currentQ === 0) {
+      document.getElementById("prog-wrap").style.display = "none";
+      document.getElementById("nav-title").textContent = "닥터나우 주사피부염 자가 진단";
+      showScreen("screen-intro");
+    } else {
+      renderQ();
+    }
+  } else if (active === "screen-result") {
+    retakeQuiz();
+  }
+}
+
+function goToDoctor() {
+  window.location.href = "doctornow://doctors?specialty=dermatology&disease=rosacea";
+}
+
+function retakeQuiz() {
+  currentQ = 0;
+  yesCount = 0;
+  yesAnswers = [];
+  q1Answer = false;
+  document.getElementById("screen-result").className = "screen";
+  document.getElementById("nav-title").textContent = "닥터나우 주사피부염 자가 진단";
+  showScreen("screen-intro");
+}
+
+function copyToClipboard(text, onSuccess, onFail) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(function() {
+      execCommandCopy(text, onSuccess, onFail);
+    });
+  } else {
+    execCommandCopy(text, onSuccess, onFail);
+  }
+}
+
+function execCommandCopy(text, onSuccess, onFail) {
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, 999999);
+    var ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if (ok) { onSuccess(); } else { onFail(); }
+  } catch(e) {
+    onFail();
+  }
+}
+
+function copySymptoms() {
+  var lvl = yesCount >= 3 ? 3 : yesCount;
+  var label = RESULTS[lvl].label;
+  var text = "";
+  var showRosacea = (lvl === 2 || lvl === 3);
+  if (showRosacea) text += "#주사피부염";
+  for (var i = 0; i < yesAnswers.length; i++) {
+    if (text.length > 0) text += " ";
+    text += questions[yesAnswers[i]].keyword;
+  }
+  if (text.length === 0) text = "선택한 증상 없음";
+
+  var btn = document.getElementById("btn-copy");
+  copyToClipboard(text,
+    function() {
+      btn.className = "btn-copy copied";
+      btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 복사 완료!';
+      setTimeout(function() {
+        btn.className = "btn-copy";
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> 증상 텍스트 복사하기';
+      }, 2500);
+    },
+    function() {
+      btn.textContent = "⚠️ 복사 실패 · 직접 선택해 주세요";
+      setTimeout(function() {
+        btn.className = "btn-copy";
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> 증상 텍스트 복사하기';
+      }, 3000);
+    }
+  );
+}
+
+function shareResult() {
+  var otherCount = q1Answer ? yesCount - 1 : yesCount;
+  var lvl = q1Answer ? (otherCount >= 2 ? 3 : 2) : (otherCount >= 2 ? 1 : 0);
+  var label = RESULTS[lvl].label;
+  var shareUrl = window.location.href;
+  var shareMsg = "나 주사피부염 셀프 진단해봤는데 " + label + "가 나왔어! 너도 해봐 👀";
+
+  if (typeof navigator.share === "function") {
+    navigator.share({
+      title: "주사피부염 셀프 진단 | 닥터나우",
+      text: shareMsg,
+      url: shareUrl
+    }).catch(function() {
+      // 공유 취소 시 아무 동작 없음
+    });
+    return;
+  }
+  copyToClipboard(shareUrl,
+    function() {
+      var toast = document.getElementById("share-toast");
+      toast.style.display = "block";
+      setTimeout(function() { toast.style.display = "none"; }, 3000);
+    },
+    function() {
+      alert("공유 URL: " + shareUrl);
+    }
+  );
+}
+</script>
+</body>
+</html>
