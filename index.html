@@ -655,26 +655,31 @@ function shareResult() {
   var shareUrl = window.location.href;
   var shareMsg = "나 주사피부염 셀프 진단해봤는데 " + label + "가 나왔어! 너도 해봐 👀";
 
-  if (typeof navigator.share === "function") {
+  if (navigator && navigator.share) {
+    // url만 전달 (text+url 동시 전달 시 일부 브라우저 오작동 방지)
     navigator.share({
-      title: "주사피부염 셀프 진단 | 닥터나우",
-      text: shareMsg,
       url: shareUrl
-    }).catch(function() {
-      // 공유 취소 시 아무 동작 없음
+    }).catch(function(err) {
+      if (err && err.name !== "AbortError") {
+        copyToClipboard(shareUrl, function() {
+          var toast = document.getElementById("share-toast");
+          toast.style.display = "block";
+          setTimeout(function() { toast.style.display = "none"; }, 3000);
+        }, function() {});
+      }
     });
-    return;
+  } else {
+    copyToClipboard(shareUrl,
+      function() {
+        var toast = document.getElementById("share-toast");
+        toast.style.display = "block";
+        setTimeout(function() { toast.style.display = "none"; }, 3000);
+      },
+      function() {
+        alert("공유 URL: " + shareUrl);
+      }
+    );
   }
-  copyToClipboard(shareUrl,
-    function() {
-      var toast = document.getElementById("share-toast");
-      toast.style.display = "block";
-      setTimeout(function() { toast.style.display = "none"; }, 3000);
-    },
-    function() {
-      alert("공유 URL: " + shareUrl);
-    }
-  );
 }
 </script>
 </body>
