@@ -648,6 +648,17 @@ function copySymptoms() {
   );
 }
 
+function fallbackShare(url) {
+  copyToClipboard(url,
+    function() {
+      var toast = document.getElementById("share-toast");
+      toast.style.display = "block";
+      setTimeout(function() { toast.style.display = "none"; }, 3000);
+    },
+    function() { alert("공유 URL: " + url); }
+  );
+}
+
 function shareResult() {
   var otherCount = q1Answer ? yesCount - 1 : yesCount;
   var lvl = q1Answer ? (otherCount >= 2 ? 3 : 2) : (otherCount >= 2 ? 1 : 0);
@@ -655,30 +666,22 @@ function shareResult() {
   var shareUrl = window.location.href;
   var shareMsg = "나 주사피부염 셀프 진단해봤는데 " + label + "가 나왔어! 너도 해봐 👀";
 
-  if (navigator && navigator.share) {
-    // url만 전달 (text+url 동시 전달 시 일부 브라우저 오작동 방지)
-    navigator.share({
-      url: shareUrl
-    }).catch(function(err) {
-      if (err && err.name !== "AbortError") {
-        copyToClipboard(shareUrl, function() {
-          var toast = document.getElementById("share-toast");
-          toast.style.display = "block";
-          setTimeout(function() { toast.style.display = "none"; }, 3000);
-        }, function() {});
-      }
-    });
-  } else {
-    copyToClipboard(shareUrl,
-      function() {
-        var toast = document.getElementById("share-toast");
-        toast.style.display = "block";
-        setTimeout(function() { toast.style.display = "none"; }, 3000);
-      },
-      function() {
-        alert("공유 URL: " + shareUrl);
-      }
-    );
+  // try-catch로 감싸서 동기 오류도 잡음
+  try {
+    if (navigator.share) {
+      navigator.share({ url: shareUrl })
+        .catch(function(err) {
+          // AbortError = 사용자가 직접 취소 → 무시
+          // 그 외 오류 → 클립보드 fallback
+          if (!err || err.name !== "AbortError") {
+            fallbackShare(shareUrl);
+          }
+        });
+    } else {
+      fallbackShare(shareUrl);
+    }
+  } catch(e) {
+    fallbackShare(shareUrl);
   }
 }
 </script>
