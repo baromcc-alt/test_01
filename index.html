@@ -234,8 +234,14 @@
       padding: 8px 0 4px;
     }
     .disclaimer {
-      font-size: 11px; color: #D1D5DB;
-      line-height: 1.7; text-align: center; padding-bottom: 28px;
+      font-size: 11px; color: #9CA3AF;
+      line-height: 1.8; text-align: center; padding-bottom: 36px;
+    }
+    .disclaimer p { margin-bottom: 10px; }
+    .disclaimer p:last-child { margin-bottom: 0; }
+    .disclaimer-divider {
+      width: 40px; height: 1px; background: #E5E7EB;
+      margin: 14px auto;
     }
   </style>
 </head>
@@ -245,7 +251,7 @@
   <!-- NAV BAR -->
   <div class="nav-bar">
     <div class="nav-back" onclick="goBack()">&#8249;</div>
-    <div class="nav-title" id="nav-title">닥터나우 주사피부염 자가 진단</div>
+    <div class="nav-title" id="nav-title">닥터나우 주사피부염 셀프 테스트</div>
   </div>
 
   <!-- PROGRESS -->
@@ -312,9 +318,15 @@
           친구에게 공유하기
         </button>
         <div id="share-toast" class="share-toast">🔗 링크가 클립보드에 복사됐어요!</div>
-        <button class="btn-retry" onclick="retakeQuiz()">&#8635; 다시 진단하기</button>
+        <button class="btn-retry" onclick="retakeQuiz()">&#8635; 다시 테스트 하기</button>
       </div>
-      <p class="disclaimer">본 결과는 의학적 진단이 아니며 참고용으로만 활용해 주세요.<br>정확한 진단은 전문의와 상담하시기 바랍니다.</p>
+      <div class="disclaimer">
+        <p>본 결과는 의학적 진단이 아니며 참고용으로만 활용해 주세요.<br>정확한 진단은 전문의와 상담하시기 바랍니다.</p>
+        <div class="disclaimer-divider"></div>
+        <p>닥터나우는 특정 약품 추천 및 권유를 위해 콘텐츠를 제작하지 않으며 닥터나우 회원의 건강한 생활을 돕는 것을 주 목적으로 합니다.</p>
+        <p>본 콘텐츠의 내용은 닥터나우 내 의사 및 간호사의 의학적 자문을 받아 작성되었습니다.<br>(최종 검수일: 2025년 11월 27일)</p>
+        <p>그 외 출처: 의약정보센터 KIMS, 미국피부과학회(AAD), 대한피부과학회</p>
+      </div>
     </div>
   </div>
 
@@ -405,7 +417,7 @@ var RESULTS = [
     subtitle: "위험! 완전 홍당무 주의보! 🥕",
     char: "🏥",
     bodyText: "아이쿠! 얼굴이 많이 답답하고 힘들었겠어요. 🥹\n이건 여드름이 아니라\n주사피부염일 확률이 정말 높아요!",
-    bodySub: "지금 바로 닥터나우에서 '주사피부염'을\n선택하고 선생님께 고민을 털어놓으세요.\n\"제 증상이 주사피부염 같아요!\"라고\n꼭 말씀해 주시는 것, 잊지 마세요!",
+    bodySub: "셀프 테스트에서 확인한 내용을 토대로,\n왜 주사피부염으로 생각하는지\n의사 선생님께 증상을 자세히 알려주면\n비대면 진료에 도움이 돼요!",
     hashtags: ["#주사피부염", "#모낭염아니고모낭충"],
     label: "주사피부염 확률 매우 높음"
   }
@@ -545,7 +557,7 @@ function goBack() {
     if (currentQ > 0) { currentQ--; }
     if (currentQ === 0) {
       document.getElementById("prog-wrap").style.display = "none";
-      document.getElementById("nav-title").textContent = "닥터나우 주사피부염 자가 진단";
+      document.getElementById("nav-title").textContent = "닥터나우 주사피부염 셀프 테스트";
       showScreen("screen-intro");
     } else {
       renderQ();
@@ -565,7 +577,7 @@ function retakeQuiz() {
   yesAnswers = [];
   q1Answer = false;
   document.getElementById("screen-result").className = "screen";
-  document.getElementById("nav-title").textContent = "닥터나우 주사피부염 자가 진단";
+  document.getElementById("nav-title").textContent = "닥터나우 주사피부염 셀프 테스트";
   showScreen("screen-intro");
 }
 
